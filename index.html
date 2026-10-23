@@ -180,12 +180,70 @@ p {
   display: block;
   background: linear-gradient(135deg, var(--blue), var(--pink));
   border-radius: 3px;
+
+  /* TAMBAHAN: gambar boleh diklik */
+  cursor: zoom-in;
 }
 
 .photo-caption {
   font-size: 12px;
   color: var(--brown);
   padding: 5px;
+}
+
+/* TAMBAHAN: paparan gambar saiz penuh */
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.90);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .25s ease, visibility .25s ease;
+}
+
+.image-lightbox.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.image-lightbox img {
+  display: block;
+  max-width: 95%;
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+  cursor: default;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 32px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.lightbox-close:hover {
+  background: rgba(255,255,255,.3);
 }
 
 .countdown {
@@ -328,6 +386,16 @@ p {
   .count-label {
     font-size: 8px;
     letter-spacing: 0;
+  }
+
+  /* TAMBAHAN: gambar penuh lebih sesuai untuk telefon */
+  .image-lightbox {
+    padding: 10px;
+  }
+
+  .image-lightbox img {
+    max-width: 100%;
+    max-height: 85vh;
   }
 }
 </style>
@@ -628,6 +696,25 @@ p {
 
 </main>
 
+<!-- TAMBAHAN: paparan gambar penuh apabila gambar diklik -->
+<div
+  class="image-lightbox"
+  id="imageLightbox"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Paparan gambar saiz penuh"
+  aria-hidden="true"
+>
+  <button
+    class="lightbox-close"
+    id="lightboxClose"
+    type="button"
+    aria-label="Tutup gambar"
+  >×</button>
+
+  <img id="lightboxImage" src="" alt="">
+</div>
+
 <footer class="footer">
   <p>Dengan kasih, doa dan penuh kesyukuran.</p>
   <p>Satu Rahsia, Satu Kejutan ♡</p>
@@ -754,6 +841,53 @@ p {
       "_blank",
       "noopener,noreferrer"
     );
+  });
+
+  // TAMBAHAN: klik mana-mana gambar untuk paparan saiz penuh.
+  const imageLightbox = document.getElementById("imageLightbox");
+  const lightboxImage = document.getElementById("lightboxImage");
+  const lightboxClose = document.getElementById("lightboxClose");
+
+  function openLightbox(image) {
+    lightboxImage.src = image.src;
+    lightboxImage.alt = image.alt;
+    imageLightbox.classList.add("active");
+    imageLightbox.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    lightboxClose.focus();
+  }
+
+  function closeLightbox() {
+    imageLightbox.classList.remove("active");
+    imageLightbox.setAttribute("aria-hidden", "true");
+    lightboxImage.src = "";
+    document.body.style.overflow = "";
+  }
+
+  document.querySelectorAll(".photo-card img").forEach(image => {
+    image.addEventListener("click", () => {
+      openLightbox(image);
+    });
+  });
+
+  // Tutup menggunakan butang silang.
+  lightboxClose.addEventListener("click", closeLightbox);
+
+  // Tutup apabila kawasan gelap di luar gambar diklik.
+  imageLightbox.addEventListener("click", event => {
+    if (event.target === imageLightbox) {
+      closeLightbox();
+    }
+  });
+
+  // Tutup menggunakan kekunci Escape pada komputer.
+  document.addEventListener("keydown", event => {
+    if (
+      event.key === "Escape" &&
+      imageLightbox.classList.contains("active")
+    ) {
+      closeLightbox();
+    }
   });
 </script>
 
